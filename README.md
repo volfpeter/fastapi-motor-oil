@@ -210,7 +210,7 @@ Add `__init__.py` as well to `notes_app`:
 from .app import create_app
 ```
 
-With everything in place, you can serve the application by executing `uvicorn notes_app:create_app --reload --factory` in your root directory. Go to [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) in the browser to see and the try the created REST API.
+With everything in place, you can serve the application by executing `uvicorn notes_app:create_app --reload --factory` in your root directory. Go to [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) in the browser to see and try the created REST API.
 
 ## Requirements
 
