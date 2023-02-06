@@ -1,0 +1,45 @@
+metadata-version = "2.3"
+homepage = "https://github.com/volfpeter/fastapi-motor-oil"
+author = "Peter Volf"
+author-email = "do.volfp@gmail.com"
+
+[tool.black]
+line-length = 118
+
+[tool.mypy]
+check_untyped_defs = true
+show_error_codes = true
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages]
+find = {}  # Scan the project directory with the default parameters
+
+[project]
+name = "fastapi-motor-oil"
+version = "0.1.0"
+description = "Typed utilities for using MongoDB (and the asyncio motor driver) with FastAPI - not an ODM."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = ["pydantic", "motor"]
+classifiers = [
+    "Intended Audience :: Information Technology",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Development Status :: 4 - Beta",
+    "Topic :: Internet",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development",
+    "Typing :: Typed",
+    "Environment :: Web Environment",
+    "Framework :: FastAPI",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Internet :: WWW/HTTP",
+]
+
+[project.optional-dependencies]
+dev = ["black", "mypy"]
