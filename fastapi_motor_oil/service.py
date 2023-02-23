@@ -8,6 +8,7 @@ from pymongo.results import DeleteResult, InsertOneResult, UpdateResult
 
 if TYPE_CHECKING:
     from motor.motor_asyncio import (
+        AsyncIOMotorClientSession,
         AsyncIOMotorCollection,
         AsyncIOMotorCursor,
         AsyncIOMotorDatabase,
@@ -15,7 +16,6 @@ if TYPE_CHECKING:
     )
 
     from .typing import (
-        AsyncIOMotorClientSession,
         CollectionOptions,
         DeleteOptions,
         FindOptions,
@@ -124,7 +124,7 @@ class MongoService(Generic[TInsert, TUpdate]):
             collation: A `Collation` instance.
             sparse: Whether to omit documents from the index that doesn't have the indexed field.
         """
-        return await self.collection.create_index(
+        return await self.collection.create_index(  # type: ignore[no-any-return]
             keys,
             name=name,
             unique=unique,
@@ -148,7 +148,11 @@ class MongoService(Generic[TInsert, TUpdate]):
             index_or_name: The index to drop.
             session: An optional session to use.
         """
-        return await self.collection.drop_index(index_or_name, session=session, **kwargs)
+        return await self.collection.drop_index(  # type: ignore[no-any-return]
+            index_or_name,
+            session=session,
+            **kwargs,
+        )
 
     async def drop_indexes(self, session: AsyncIOMotorClientSession | None = None, **kwargs: Any) -> None:
         """
@@ -157,7 +161,7 @@ class MongoService(Generic[TInsert, TUpdate]):
         Arguments:
             session: An optional session to use.
         """
-        return await self.collection.drop_index(session, **kwargs)
+        return await self.collection.drop_index(session, **kwargs)  # type: ignore[no-any-return]
 
     def list_indexes(
         self,
@@ -208,7 +212,7 @@ class MongoService(Generic[TInsert, TUpdate]):
         Returns:
             The result of the operation.
         """
-        return await self.collection.delete_many(query, **(options or {}))
+        return await self.collection.delete_many(query, **(options or {}))  # type: ignore[no-any-return]
 
     async def delete_one(
         self,
@@ -226,7 +230,7 @@ class MongoService(Generic[TInsert, TUpdate]):
         Returns:
             The result of the operation.
         """
-        return await self.collection.delete_one(query, **(options or {}))
+        return await self.collection.delete_one(query, **(options or {}))  # type: ignore[no-any-return]
 
     def find(
         self,
@@ -266,7 +270,7 @@ class MongoService(Generic[TInsert, TUpdate]):
         Returns:
             A single matching document or `None` if there are no matches.
         """
-        return await self.collection.find_one(query, projection, **(options or {}))
+        return await self.collection.find_one(query, projection, **(options or {}))  # type: ignore[no-any-return]
 
     async def get_by_id(
         self,
@@ -302,7 +306,10 @@ class MongoService(Generic[TInsert, TUpdate]):
         Raises:
             Exception: if the data is invalid.
         """
-        return await self.collection.insert_one(self._prepare_for_insert(data), **(options or {}))
+        return await self.collection.insert_one(  # type: ignore[no-any-return]
+            self._prepare_for_insert(data),
+            **(options or {}),
+        )
 
     async def update_by_id(
         self,
@@ -342,7 +349,11 @@ class MongoService(Generic[TInsert, TUpdate]):
         Returns:
             The result of the operation.
         """
-        return await self.collection.update_many(query, self._prepare_for_update(changes), **(options or {}))
+        return await self.collection.update_many(  # type: ignore[no-any-return]
+            query,
+            self._prepare_for_update(changes),
+            **(options or {}),
+        )
 
     async def update_one(
         self,
@@ -362,7 +373,11 @@ class MongoService(Generic[TInsert, TUpdate]):
         Returns:
             The result of the operation.
         """
-        return await self.collection.update_one(query, self._prepare_for_update(changes), **(options or {}))
+        return await self.collection.update_one(  # type: ignore[no-any-return]
+            query,
+            self._prepare_for_update(changes),
+            **(options or {}),
+        )
 
     def _create_collection(self) -> AsyncIOMotorCollection:
         """

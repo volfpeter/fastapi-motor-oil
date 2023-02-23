@@ -1,28 +1,11 @@
-metadata-version = "2.3"
-homepage = "https://github.com/volfpeter/fastapi-motor-oil"
-author = "Peter Volf"
-author-email = "do.volfp@gmail.com"
-
-[tool.black]
-line-length = 118
-
-[tool.mypy]
-check_untyped_defs = true
-show_error_codes = true
-
-[build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
-
-[tool.setuptools.packages]
-find = {}  # Scan the project directory with the default parameters
-
 [project]
 name = "fastapi-motor-oil"
-version = "0.1.0"
 description = "Typed utilities for using MongoDB (and the asyncio motor driver) with FastAPI - not an ODM."
 readme = "README.md"
 license = { text = "MIT" }
+authors = [
+    { name = "Peter Volf", email = "do.volfp@gmail.com" },
+]
 requires-python = ">=3.10"
 dependencies = ["pydantic", "motor"]
 classifiers = [
@@ -41,5 +24,41 @@ classifiers = [
     "Topic :: Internet :: WWW/HTTP",
 ]
 
+[project.urls]
+Homepage = "https://github.com/volfpeter/fastapi-motor-oil"
+
+[tool.black]
+line-length = 118
+
+[tool.mypy]
+check_untyped_defs = true
+show_error_codes = true
+strict = true
+
+[tool.ruff]
+line-length = 118
+
+[tool.poetry]
+name = "fastapi-motor-oil"
+version = "0.1.1"
+description = "Typed utilities for using MongoDB (and the asyncio motor driver) with FastAPI - not an ODM."
+authors = ["Peter Volf <do.volfp@gmail.com>"]
+readme = "README.md"
+packages = [{include = "fastapi_motor_oil"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+motor = "^3.1.1"
+pydantic = "^1.10.5"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.1.0"
+mypy = "^1.0.1"
+ruff = "^0.0.251"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
 [project.optional-dependencies]
-dev = ["black", "mypy"]
+dev = ["black", "mypy", "ruff"]

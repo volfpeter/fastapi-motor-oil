@@ -29,7 +29,7 @@ class DatabaseProvider(Protocol):
 
 class UTCDatetime(datetime):
     @classmethod
-    def __get_validators__(cls):
+    def __get_validators__(cls) -> Generator[Any, None, None]:
         yield parse_datetime  # default pydantic behavior
         yield cls.ensure_utc
 
@@ -60,7 +60,7 @@ class StrObjectId(ObjectId):
     """
 
     @classmethod
-    def __get_validators__(cls) -> Generator[Callable, None, None]:
+    def __get_validators__(cls) -> Generator[Callable[[Any], StrObjectId], None, None]:
         yield cls.validate
 
     @classmethod

@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Any, Mapping, Sequence, TypedDict, TYPE_CHECKING
 
-from motor.motor_asyncio import AsyncIOMotorClientSession  # Reexported
+from motor.motor_asyncio import AsyncIOMotorClientSession
 
 if TYPE_CHECKING:
     from bson.codec_options import CodecOptions
@@ -21,7 +21,7 @@ UpdateObject = dict[str, Any] | Sequence[dict[str, Any]]
 
 
 class CollectionOptions(TypedDict, total=False):
-    codec_options: CodecOptions | None  # Default is None
+    codec_options: "CodecOptions[Any]" | None  # Default is None
     read_preference: Primary | PrimaryPreferred | Secondary | SecondaryPreferred | Nearest | None  # Default  None
     write_concern: WriteConcern | None  # Default is None
     read_concern: ReadConcern | None  # Default is None
