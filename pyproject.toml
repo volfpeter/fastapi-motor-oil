@@ -31,9 +31,20 @@ Homepage = "https://github.com/volfpeter/fastapi-motor-oil"
 line-length = 118
 
 [tool.mypy]
-check_untyped_defs = true
 show_error_codes = true
-strict = true
+check_untyped_defs = true
+disallow_any_generics = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+strict_equality = true
+implicit_reexport = true
 
 [tool.ruff]
 line-length = 118
