@@ -51,7 +51,7 @@ line-length = 118
 
 [tool.poetry]
 name = "fastapi-motor-oil"
-version = "0.1.1"
+version = "0.2.0"
 description = "Typed utilities for using MongoDB (and the asyncio motor driver) with FastAPI - not an ODM."
 authors = ["Peter Volf <do.volfp@gmail.com>"]
 readme = "README.md"
