@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import Any, Mapping, Sequence, TypedDict, TYPE_CHECKING
 
-from motor.motor_asyncio import AsyncIOMotorClientSession
+from motor.core import AgnosticCollection
 
 if TYPE_CHECKING:
     from bson.codec_options import CodecOptions
@@ -30,7 +30,7 @@ class CollectionOptions(TypedDict, total=False):
 class DeleteOptions(TypedDict, total=False):
     collation: Mapping[str, Any] | Collation | None  # Default is None
     hint: str | Sequence[tuple[str, int | str | Mapping[str, Any]]] | None  # Default is None
-    session: AsyncIOMotorClientSession | None  # Default is None
+    session: AgnosticCollection | None  # Default is None
     let: Mapping[str, Any] | None  # Default is None
     comment: Any | None  # Default is None
 
@@ -54,14 +54,14 @@ class FindOptions(TypedDict, total=False):
     show_record_id: bool | None  # Default is None
     snapshot: bool | None  # Default is None
     comment: Any | None  # Default is None
-    session: AsyncIOMotorClientSession | None  # Default is None
+    session: AgnosticCollection | None  # Default is None
     allow_disk_use: bool | None  # Default is None
     let: bool | None  # Default is None
 
 
 class InsertOneOptions(TypedDict, total=False):
     bypass_document_validation: bool  # Default is False
-    session: AsyncIOMotorClientSession | None  # Default is None
+    session: AgnosticCollection | None  # Default is None
     comment: Any | None  # Default is None
 
 
@@ -71,7 +71,7 @@ class UpdateOneOptions(TypedDict, total=False):
     collation: Mapping[str, Any] | Collation | None  # Default is None
     array_filters: Sequence[Mapping[str, Any]]  # Default is None
     hint: str | Sequence[tuple[str, int | str | Mapping[str, Any]]] | None  # Default is None
-    session: AsyncIOMotorClientSession | None  # Default is None
+    session: AgnosticCollection | None  # Default is None
     let: Mapping[str, Any] | None  # Default is None
     comment: Any | None  # Default is None
 
@@ -82,6 +82,6 @@ class UpdateManyOptions(TypedDict, total=False):
     bypass_document_validation: bool  # Default is None
     collation: Mapping[str, Any] | Collation | None  # Default is None
     hint: str | Sequence[tuple[str, int | str | Mapping[str, Any]]] | None  # Default is None
-    session: AsyncIOMotorClientSession | None  # Default is None
+    session: AgnosticCollection | None  # Default is None
     let: Mapping[str, Any] | None  # Default is None
     comment: Any | None  # Default is None

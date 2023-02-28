@@ -4,7 +4,7 @@ from typing import Any, Callable, Generator, Protocol
 from datetime import datetime, timezone
 
 from bson import ObjectId
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
+from motor.core import AgnosticClient, AgnosticDatabase
 from pydantic import BaseModel, Field
 from pydantic.datetime_parse import parse_datetime
 
@@ -14,7 +14,7 @@ class ClientProvider(Protocol):
     Client provider protocol for FastAPI database dependencies.
     """
 
-    def __call__(self) -> AsyncIOMotorClient:
+    def __call__(self) -> AgnosticClient:
         ...
 
 
@@ -23,7 +23,7 @@ class DatabaseProvider(Protocol):
     Database provider protocol for FastAPI database dependencies.
     """
 
-    def __call__(self) -> AsyncIOMotorDatabase:
+    def __call__(self) -> AgnosticDatabase:
         ...
 
 
