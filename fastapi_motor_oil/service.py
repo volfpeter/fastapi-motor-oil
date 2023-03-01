@@ -462,7 +462,7 @@ class MongoService(Generic[TInsert, TUpdate]):
             Exception: if the data is invalid.
         """
         return await self.collection.insert_one(  # type: ignore[no-any-return]
-            await self._prepare_for_insert(data),
+            await self._prepare_for_insert(None, data),
             **(options or {}),
         )
 
@@ -512,7 +512,7 @@ class MongoService(Generic[TInsert, TUpdate]):
         """
         return await self.collection.update_many(  # type: ignore[no-any-return]
             query,
-            await self._prepare_for_update(changes),
+            await self._prepare_for_update(query, changes),
             **(options or {}),
         )
 
@@ -539,7 +539,7 @@ class MongoService(Generic[TInsert, TUpdate]):
         """
         return await self.collection.update_one(  # type: ignore[no-any-return]
             query,
-            await self._prepare_for_update(changes),
+            await self._prepare_for_update(query, changes),
             **(options or {}),
         )
 
@@ -613,12 +613,13 @@ class MongoService(Generic[TInsert, TUpdate]):
 
         return start_session
 
-    async def _prepare_for_insert(self, data: TInsert) -> dict[str, Any]:
+    async def _prepare_for_insert(self, query: MongoQuery | None, data: TInsert) -> dict[str, Any]:
         """
         Validates the given piece of data and converts it into its database representation
         if validation was successful.
 
         Arguments:
+            query: Query that matches the documents that will be updated.
             data: The data to be inserted.
 
         Returns:
@@ -627,14 +628,17 @@ class MongoService(Generic[TInsert, TUpdate]):
         Raises:
             Exception: if the data is invalid.
         """
-        await self._validate_insert(data)
+        await self._validate_insert(query, data)
         return await self._convert_for_insert(data)
 
-    async def _prepare_for_update(self, data: TUpdate) -> UpdateObject | Sequence[UpdateObject]:
+    async def _prepare_for_update(
+        self, query: MongoQuery | None, data: TUpdate
+    ) -> UpdateObject | Sequence[UpdateObject]:
         """
         Validates the given piece of data and converts it into an update object.
 
         Arguments:
+            query: Query that matches the documents that will be updated.
             data: The update data.
 
         Returns:
@@ -643,16 +647,17 @@ class MongoService(Generic[TInsert, TUpdate]):
         Raises:
             Exception: if the data is invalid.
         """
-        await self._validate_update(data)
+        await self._validate_update(query, data)
         return await self._convert_for_update(data)
 
-    async def _validate_insert(self, data: TInsert) -> None:
+    async def _validate_insert(self, query: MongoQuery | None, data: TInsert) -> None:
         """
         Validates the given piece of data for insertion by executing all insert validators.
 
         See `Validator` for more information.
 
         Arguments:
+            query: Query that matches the documents that will be updated.
             data: The data to validate.
 
         Raises:
@@ -661,7 +666,7 @@ class MongoService(Generic[TInsert, TUpdate]):
         # Sequential validation, slow but safe.
         for validator in self.__class__.__dict__.values():
             if isinstance(validator, Validator) and "insert" in validator.config:
-                await validator(self, data)
+                await validator(self, query, data)
 
     async def _validate_deny_delete(self, session: AgnosticClientSession, ids: Sequence[ObjectId]) -> None:
         """
@@ -714,13 +719,14 @@ class MongoService(Generic[TInsert, TUpdate]):
             if isinstance(rule, DeleteRule) and rule.config == "post":
                 await rule(self, session, ids)
 
-    async def _validate_update(self, data: TUpdate) -> None:
+    async def _validate_update(self, query: MongoQuery | None, data: TUpdate) -> None:
         """
         Validates the given piece of data for update by executing all update validators.
 
         See `Validator` for more information.
 
         Arguments:
+            query: Query that matches the documents that will be updated.
             data: The data to validate.
 
         Raises:
@@ -729,4 +735,4 @@ class MongoService(Generic[TInsert, TUpdate]):
         # Sequential validation, slow but safe.
         for validator in self.__class__.__dict__.values():
             if isinstance(validator, Validator) and "update" in validator.config:
-                await validator(self, data)
+                await validator(self, query, data)

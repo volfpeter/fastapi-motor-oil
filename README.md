@@ -100,9 +100,19 @@ class TreeNodeService(MongoService[TreeNodeCreate, TreeNodeUpdate]):
             raise ValueError("Can not delete root nodes.")
 
     @validator("insert-update")
-    async def v_parent_exists(self, data: TreeNodeCreate | TreeNodeUpdate) -> None:
-        if data.parent is not None and not await self.exists(data.parent):
+    async def v_parent_valid(self, query: MongoQuery | None, data: TreeNodeCreate | TreeNodeUpdate) -> None:
+        if data.parent is None:  # No parent node is always fine
+            return
+
+        if not await self.exists(data.parent):  # Parent must exist.
             raise ValueError("Parent does not exist.")
+
+        if isinstance(data, TreeNodeCreate):  # No more check during creation.
+            return
+
+        matched_ids = (await self.find_ids(query)) if isinstance(data, TreeNodeUpdate) else []
+        if data.parent in matched_ids:  # Self reference is forbidden.
+            raise ValueError("Self-reference.")
 ```
 
 Routing implementation (in `api.py`):
