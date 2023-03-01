@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Any, Generic, TypeVar, TYPE_CHECKING
+from typing import Any, Generator, Generic, TypeVar, TYPE_CHECKING
 
 from collections.abc import AsyncGenerator, Callable, Coroutine, Mapping, Sequence
 from contextlib import asynccontextmanager, nullcontext, AbstractAsyncContextManager
@@ -583,6 +583,15 @@ class MongoService(Generic[TInsert, TUpdate]):
         """
         return self._database.get_collection(self.collection_name, **(self.collection_options or {}))
 
+    def _delete_rules(self) -> Generator[DeleteRule["MongoService[TInsert, TUpdate]"], None, None]:
+        """
+        Generator that yields the delete rules that are registered on this service
+        in the order they are present in `__class__.__dict__`.
+        """
+        for rule in self.__class__.__dict__.values():
+            if isinstance(rule, DeleteRule):
+                yield rule
+
     def _has_delete_rules(self) -> bool:
         """
         Returns whether the service has any delete rules.
@@ -664,8 +673,8 @@ class MongoService(Generic[TInsert, TUpdate]):
             ValidationError: If validation failed.
         """
         # Sequential validation, slow but safe.
-        for validator in self.__class__.__dict__.values():
-            if isinstance(validator, Validator) and "insert" in validator.config:
+        for validator in self._validators():
+            if "insert" in validator.config:
                 await validator(self, query, data)
 
     async def _validate_deny_delete(self, session: AgnosticClientSession, ids: Sequence[ObjectId]) -> None:
@@ -681,7 +690,7 @@ class MongoService(Generic[TInsert, TUpdate]):
         Raises:
             DeleteError: if one of the executed delete rules prevent the operation.
         """
-        for rule in self.__class__.__dict__.values():
+        for rule in self._delete_rules():
             if isinstance(rule, DeleteRule) and rule.config == "deny":
                 await rule(self, session, ids)
 
@@ -698,7 +707,7 @@ class MongoService(Generic[TInsert, TUpdate]):
         Raises:
             DeleteError: if one of the executed delete rules fail.
         """
-        for rule in self.__class__.__dict__.values():
+        for rule in self._delete_rules():
             if isinstance(rule, DeleteRule) and rule.config == "pre":
                 await rule(self, session, ids)
 
@@ -715,7 +724,7 @@ class MongoService(Generic[TInsert, TUpdate]):
         Raises:
             DeleteError: if one of the executed delete rules fail.
         """
-        for rule in self.__class__.__dict__.values():
+        for rule in self._delete_rules():
             if isinstance(rule, DeleteRule) and rule.config == "post":
                 await rule(self, session, ids)
 
@@ -733,6 +742,15 @@ class MongoService(Generic[TInsert, TUpdate]):
             ValidationError: If validation failed.
         """
         # Sequential validation, slow but safe.
-        for validator in self.__class__.__dict__.values():
-            if isinstance(validator, Validator) and "update" in validator.config:
+        for validator in self._validators():
+            if "update" in validator.config:
                 await validator(self, query, data)
+
+    def _validators(self) -> Generator[Validator["MongoService[TInsert, TUpdate]", TInsert | TUpdate], None, None]:
+        """
+        Generator that yields the validators that are registered on this service
+        in the order they are present in `__class__.__dict__`.
+        """
+        for validator in self.__class__.__dict__.values():
+            if isinstance(validator, Validator):
+                yield validator
