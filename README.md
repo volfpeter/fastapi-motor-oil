@@ -67,7 +67,7 @@ Service implementation (in `service.py`):
 from collections.abc import Sequence
 
 from bson import ObjectId
-from fastapi_motor_oil import CollectionOptions, MongoService, delete_rule
+from fastapi_motor_oil import CollectionOptions, MongoService, delete_rule, validator
 from motor.core import AgnosticClientSession
 
 from .model import TreeNodeCreate, TreeNodeUpdate
@@ -98,6 +98,11 @@ class TreeNodeService(MongoService[TreeNodeCreate, TreeNodeUpdate]):
         )
         if root_cnt > 0:
             raise ValueError("Can not delete root nodes.")
+
+    @validator("insert-update")
+    async def v_parent_exists(self, data: TreeNodeCreate | TreeNodeUpdate) -> None:
+        if data.parent is not None and not await self.exists(data.parent):
+            raise ValueError("Parent does not exist.")
 ```
 
 Routing implementation (in `api.py`):
