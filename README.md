@@ -138,11 +138,6 @@ def make_api(
         get_database: FastAPI dependency that returns the `AgnosticDatabase`
                       database instance for the API.
         prefix: The prefix for the created `APIRouter`.
-        add_get_all: Whether to add the "get all" route to the router.
-        add_create: Whether to add the "create" route to the router.
-        add_get_by_id: Whether to add the "get by ID" route to the router.
-        add_delete: Whether to add the "delete" route to the router.
-        add_update: Whether to add the "update" route to the router.
 
     Returns:
         The created `APIRouter` instance.
