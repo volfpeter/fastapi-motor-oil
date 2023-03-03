@@ -4,7 +4,7 @@ In this is example we will:
 
 - create a simple `TreeNode` document model with a name, a creation date, and an optional reference to a parent node;
 - declare a couple of delete rules and validators that enforce consistency;
-- prepare all the services that are necessar to create, read, update, or delete documents;
+- prepare all the services that are necessary to create, read, update, or delete documents;
 - implement a `fastapi` `APIRouter` factory that can be included in `fastapi` applications;
 - and also set up the `fastapi` application itself.
 
