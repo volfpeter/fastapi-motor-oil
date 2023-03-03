@@ -30,7 +30,6 @@ plugins:
       handlers:
         python:
           paths: [.]
-  - termynal
 
 markdown_extensions:
   - pymdownx.highlight:

@@ -1022,24 +1022,6 @@ files = [
 ]
 
 [[package]]
-name = "termynal"
-version = "0.2.1"
-description = ""
-category = "dev"
-optional = false
-python-versions = ">=3.8.1,<4.0.0"
-files = [
-    {file = "termynal-0.2.1-py3-none-any.whl", hash = "sha256:407cbf1cc757ebf322c6536b835fbc41f9d436b0812bc98b4b60441d411d2e4a"},
-    {file = "termynal-0.2.1.tar.gz", hash = "sha256:f456fac81687b57fc7241cf352d0679856e4344048109744018afe19e5bad58e"},
-]
-
-[package.dependencies]
-markdown = "*"
-
-[package.extras]
-mkdocs = ["mkdocs (>=1.4,<2.0)"]
-
-[[package]]
 name = "tomli"
 version = "2.0.1"
 description = "A lil' TOML parser"
@@ -1124,4 +1106,4 @@ watchmedo = ["PyYAML (>=3.10)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "004557306707818a7e7f6b045038d187c2fe5809d30378d8bc7ee91d6b2e5d28"
+content-hash = "3d8e3cc3c32e9e7ac637c9b59b9d97521483ea9494297c999c7f4e512fc2eabd"

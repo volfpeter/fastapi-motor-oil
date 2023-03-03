@@ -17,7 +17,6 @@ The library is available on PyPI and can be installed with:
 
 ```console
 $ pip install fastapi-motor-oil
----> 100%
 ```
 
 ## Dependencies
