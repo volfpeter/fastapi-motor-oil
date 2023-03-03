@@ -1,6 +1,6 @@
 [project]
 name = "fastapi-motor-oil"
-description = "Typed utilities for using MongoDB (and the asyncio motor driver) with FastAPI - not an ODM."
+description = "Collection of async utilities for working with MongoDB and conveniently creating performant APIs with async web frameworks such a FastAPI."
 readme = "README.md"
 license = { text = "MIT" }
 authors = [
@@ -26,6 +26,7 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://github.com/volfpeter/fastapi-motor-oil"
+Documentation = "https://volfpeter.github.io/fastapi-motor-oil"
 
 [tool.black]
 line-length = 118
@@ -51,7 +52,7 @@ line-length = 118
 
 [tool.poetry]
 name = "fastapi-motor-oil"
-version = "0.3.0"
+version = "0.4.0"
 description = "Typed utilities for using MongoDB (and the asyncio motor driver) with FastAPI - not an ODM."
 authors = ["Peter Volf <do.volfp@gmail.com>"]
 readme = "README.md"
