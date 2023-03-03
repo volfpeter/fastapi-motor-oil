@@ -12,15 +12,27 @@ if TYPE_CHECKING:
 
 
 MongoProjection = dict[str, Any]
+"""
+MongoDB projection object.
+"""
 
 
 MongoQuery = dict[str, Any]
-
+"""
+MongoDB query object.
+"""
 
 UpdateObject = dict[str, Any] | Sequence[dict[str, Any]]
+"""
+MongoDB update object.
+"""
 
 
 class CollectionOptions(TypedDict, total=False):
+    """
+    Collection options.
+    """
+
     codec_options: "CodecOptions[Any]" | None  # Default is None
     read_preference: Primary | PrimaryPreferred | Secondary | SecondaryPreferred | Nearest | None  # Default  None
     write_concern: WriteConcern | None  # Default is None
@@ -28,6 +40,10 @@ class CollectionOptions(TypedDict, total=False):
 
 
 class DeleteOptions(TypedDict, total=False):
+    """
+    Delete options.
+    """
+
     collation: Mapping[str, Any] | Collation | None  # Default is None
     hint: str | Sequence[tuple[str, int | str | Mapping[str, Any]]] | None  # Default is None
     session: AgnosticCollection | None  # Default is None
@@ -36,6 +52,10 @@ class DeleteOptions(TypedDict, total=False):
 
 
 class FindOptions(TypedDict, total=False):
+    """
+    Find options.
+    """
+
     skip: int  # Default is 0
     limit: int  # Default is 0
     no_cursor_timeout: bool  # Default is False
@@ -60,12 +80,20 @@ class FindOptions(TypedDict, total=False):
 
 
 class InsertOneOptions(TypedDict, total=False):
+    """
+    Insert options.
+    """
+
     bypass_document_validation: bool  # Default is False
     session: AgnosticCollection | None  # Default is None
     comment: Any | None  # Default is None
 
 
 class UpdateOneOptions(TypedDict, total=False):
+    """
+    Update-one options.
+    """
+
     upsert: bool  # Default is False
     bypass_document_validation: bool  # Default is False
     collation: Mapping[str, Any] | Collation | None  # Default is None
@@ -77,6 +105,10 @@ class UpdateOneOptions(TypedDict, total=False):
 
 
 class UpdateManyOptions(TypedDict, total=False):
+    """
+    Update-many options.
+    """
+
     upsert: bool  # Default is False
     array_filters: Sequence[Mapping[str, Any]] | None  # Default is None
     bypass_document_validation: bool  # Default is None
