@@ -1,5 +1,3 @@
-# fastapi-motor-oil
-
 # FastAPI-motor-oil
 
 `FastAPI-motor-oil` is a collection of async utilities for working with MongoDB and conveniently creating performant APIs with async web frameworks such a [FastAPI](https://fastapi.tiangolo.com/).
