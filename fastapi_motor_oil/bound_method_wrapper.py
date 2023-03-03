@@ -14,11 +14,11 @@ class BoundMethodWrapper(Generic[TOwner, TParams, TConfig]):
     Note: the wrapped method will be unbound.
 
     Caveats:
-        - This class acts as if it was a bound method of the instance using the
-          descriptor protocol, but of course it is not a bound method, which becomes
-          important when trying to apply decorators on the wrapper instance. In those
-          cases the wrapper acts as a static method whose first argument is the instance,
-          so you need to apply decorators that match this signature.
+        This class acts as if it was a bound method of the instance using the
+        descriptor protocol, but of course it is not a bound method, which becomes
+        important when trying to apply decorators on the wrapper instance. In those
+        cases the wrapper acts as a static method whose first argument is the instance,
+        so you need to apply decorators that match this signature.
 
     Configuration:
         exception: An optional exception factory (or type) that accepts a single string

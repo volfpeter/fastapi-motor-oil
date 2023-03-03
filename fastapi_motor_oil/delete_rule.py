@@ -14,6 +14,9 @@ class DeleteError(Exception):
 
 TOwner = TypeVar("TOwner")
 DeleteConfig = Literal["deny", "pre", "post"]
+"""
+Delete rule configuration that specifies when a given delete rule must be executed.
+"""
 
 
 class DeleteRule(BoundMethodWrapper[TOwner, [AgnosticClientSession, Sequence[ObjectId]], DeleteConfig]):
@@ -25,18 +28,19 @@ class DeleteRule(BoundMethodWrapper[TOwner, [AgnosticClientSession, Sequence[Obj
 
     Delete rule execution sequence:
 
-        - "deny" rules are executed first - delete rules whose role is to prevent
-          a delete operation should have this config.
-        - "pre" rules are executed next.
-        - Then the requested delete operation takes place.
-        - Finally the "post" delete rules are executed.
+    - "deny" rules are executed first - delete rules whose role is to prevent
+      a delete operation should have this config.
+    - "pre" rules are executed next.
+    - Then the requested delete operation takes place.
+    - Finally the "post" delete rules are executed.
 
     Delete rules are always called in a transaction. Well-behaved delete rules must:
-        - always use the received session instance to interact with the database,
-          i.e. forward the received session to every database driver call;
-        - *not* commit the session;
-        - *not* start a new transaction (see `session.in_transaction`);
-        - raise an exception if the operation can or must not complete.
+
+    - always use the received session instance to interact with the database,
+      i.e. forward the received session to every database driver call;
+    - *not* commit the session;
+    - *not* start a new transaction (see `session.in_transaction`);
+    - raise an exception if the operation can or must not complete.
 
     Example:
 

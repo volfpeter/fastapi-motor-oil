@@ -28,6 +28,10 @@ class DatabaseProvider(Protocol):
 
 
 class UTCDatetime(datetime):
+    """
+    Pydantic datetime field that enforces UTC timezone.
+    """
+
     @classmethod
     def __get_validators__(cls) -> Generator[Any, None, None]:
         yield parse_datetime  # default pydantic behavior
@@ -56,7 +60,7 @@ class UTCDatetime(datetime):
 
 class StrObjectId(ObjectId):
     """
-    Custom BSON ObjectID for use with Pydantic.
+    Custom BSON `ObjectId` for use with Pydantic.
     """
 
     @classmethod
@@ -65,8 +69,10 @@ class StrObjectId(ObjectId):
 
     @classmethod
     def validate(cls, value: Any) -> StrObjectId:
+        """
+        Checks whether the given value is a valid `ObjectId`"""
         if not ObjectId.is_valid(value):
-            raise ValueError("Invalid StrObjectID")
+            raise ValueError("Invalid StrObjectId")
         return cls(value)
 
     @classmethod

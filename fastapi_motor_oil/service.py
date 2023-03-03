@@ -252,10 +252,10 @@ class MongoService(Generic[TInsert, TUpdate]):
 
         The method enforces delete rules and executes the operation as follows:
 
-            - Enforce "deny" delete rules.
-            - Enforce "pre" delete rules.
-            - Execute the delete operation.
-            - Enforce "post" delete rules.
+        1. Enforce `"deny"` delete rules.
+        2. Enforce `"pre"` delete rules.
+        3. Execute the delete operation.
+        4. Enforce `"post"` delete rules.
 
         See `DeleteRule` for more information.
 
@@ -312,10 +312,11 @@ class MongoService(Generic[TInsert, TUpdate]):
         The default `delete_one()` implementation of the service.
 
         The method enforces delete rules and executes the operation as follows:
-            1. Enforce "deny" delete rules.
-            2. Enforce "pre" delete rules.
-            3. Execute the delete operation.
-            4. Enforce "post" delete rules.
+
+        1. Enforce `"deny"` delete rules.
+        2. Enforce `"pre"` delete rules.
+        3. Execute the delete operation.
+        4. Enforce `"post"` delete rules.
 
         See `DeleteRule` for more information.
 
