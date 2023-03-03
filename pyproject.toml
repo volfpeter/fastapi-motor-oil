@@ -66,6 +66,9 @@ pydantic = "^1.10.5"
 black = "^23.1.0"
 mypy = "^1.0.1"
 ruff = "^0.0.251"
+mkdocs-material = "^9.1.0"
+mkdocstrings = {extras = ["python"], version = "^0.20.0"}
+termynal = "^0.2.1"
 
 [build-system]
 requires = ["poetry-core"]

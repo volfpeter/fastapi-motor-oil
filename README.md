@@ -26,14 +26,14 @@ The project layout under your root directory will be as follows:
 - `/tree_app`
   - `__init__.py`
   - `api.py`
-  - `app.py`
+  - `main.py`
   - `model.py`
   - `service.py`
 
 Model definitions (in `model.py`):
 
 ```python
-from fastapi_motor_oil import DocumentModel, StrObjectId
+from fastapi_motor_oil import DocumentModel, StrObjectId, UTCDatetime
 from pydantic import BaseModel
 
 class TreeNode(DocumentModel):
@@ -43,6 +43,7 @@ class TreeNode(DocumentModel):
 
     name: str
     parent: StrObjectId | None
+    created_at: UTCDatetime
 
 class TreeNodeCreate(BaseModel):
     """
@@ -59,15 +60,24 @@ class TreeNodeUpdate(BaseModel):
 
     name: str | None
     parent: StrObjectId | None
+
 ```
 
 Service implementation (in `service.py`):
 
 ```python
+from typing import Any
 from collections.abc import Sequence
+from datetime import datetime, timezone
 
 from bson import ObjectId
-from fastapi_motor_oil import CollectionOptions, MongoService, delete_rule, validator
+from fastapi_motor_oil import (
+    CollectionOptions,
+    MongoQuery,
+    MongoService,
+    delete_rule,
+    validator,
+)
 from motor.core import AgnosticClientSession
 
 from .model import TreeNodeCreate, TreeNodeUpdate
@@ -84,14 +94,20 @@ class TreeNodeService(MongoService[TreeNodeCreate, TreeNodeUpdate]):
     collection_options: CollectionOptions | None = None
 
     @delete_rule("pre")  # Delete rule that remove the subtrees of deleted nodes.
-    async def dr_delete_subtree(self, session: AgnosticClientSession, ids: Sequence[ObjectId]) -> None:
+    async def dr_delete_subtree(
+        self, session: AgnosticClientSession, ids: Sequence[ObjectId]
+    ) -> None:
         child_ids = await self.find_ids({"parent": {"$in": ids}}, session=session)
         if len(child_ids) > 0:
             # Recursion
-            await self.delete_many({"_id": {"$in": child_ids}}, options={"session": session})
+            await self.delete_many(
+                {"_id": {"$in": child_ids}}, options={"session": session}
+            )
 
     @delete_rule("deny")  # Delete rule that prevents the removal of root nodes.
-    async def dr_deny_if_root(self, session: AgnosticClientSession, ids: Sequence[ObjectId]) -> None:
+    async def dr_deny_if_root(
+        self, session: AgnosticClientSession, ids: Sequence[ObjectId]
+    ) -> None:
         root_cnt = await self.count_documents(
             {"$and": [{"_id": {"$in": ids}}, {"parent": None}]},
             options={"session": session},
@@ -100,19 +116,29 @@ class TreeNodeService(MongoService[TreeNodeCreate, TreeNodeUpdate]):
             raise ValueError("Can not delete root nodes.")
 
     @validator("insert-update")
-    async def v_parent_valid(self, query: MongoQuery | None, data: TreeNodeCreate | TreeNodeUpdate) -> None:
+    async def v_parent_valid(
+        self, query: MongoQuery | None, data: TreeNodeCreate | TreeNodeUpdate
+    ) -> None:
         if data.parent is None:  # No parent node is always fine
             return
 
         if not await self.exists(data.parent):  # Parent must exist.
             raise ValueError("Parent does not exist.")
 
-        if isinstance(data, TreeNodeCreate):  # No more check during creation.
+        if isinstance(data, TreeNodeCreate):  # No more checks during creation.
             return
 
-        matched_ids = (await self.find_ids(query)) if isinstance(data, TreeNodeUpdate) else []
+        matched_ids = (
+            (await self.find_ids(query)) if isinstance(data, TreeNodeUpdate) else []
+        )
         if data.parent in matched_ids:  # Self reference is forbidden.
             raise ValueError("Self-reference.")
+
+    async def _convert_for_insert(self, data: TreeNodeCreate) -> dict[str, Any]:
+        return {
+            **(await super()._convert_for_insert(data)),
+            "created_at": datetime.now(timezone.utc),
+        }
 ```
 
 Routing implementation (in `api.py`):
@@ -121,7 +147,13 @@ Routing implementation (in `api.py`):
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi_motor_oil import AgnosticDatabase, DatabaseProvider, DeleteResultModel, StrObjectId
+from fastapi_motor_oil import (
+    AgnosticDatabase,
+    DatabaseProvider,
+    DeleteError,
+    DeleteResultModel,
+    StrObjectId,
+)
 
 from .model import TreeNode, TreeNodeCreate, TreeNodeUpdate
 from .service import TreeNodeService
@@ -161,7 +193,9 @@ def make_api(
         try:
             result = await svc.insert_one(data)
         except Exception:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Creation failed.")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Creation failed."
+            )
 
         if (created := await svc.get_by_id(result.inserted_id)) is not None:
             return created
@@ -206,7 +240,10 @@ def make_api(
         database: AgnosticDatabase = Depends(get_database),
     ) -> DeleteResultModel:
         svc = TreeNodeService(database)
-        result = await svc.delete_by_id(id)
+        try:
+            result = await svc.delete_by_id(id)
+        except DeleteError:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, detail=str(id))
         if result.deleted_count == 0:
             raise HTTPException(status.HTTP_404_NOT_FOUND, detail=str(id))
 
@@ -215,7 +252,7 @@ def make_api(
     return api
 ```
 
-Application (in `app.py`):
+Application (in `main.py`):
 
 ```python
 from functools import lru_cache
@@ -233,7 +270,7 @@ def get_database() -> AsyncIOMotorDatabase:
 
 def register_routes(app: FastAPI) -> None:
     """Registers all routes of the application."""
-    from .api import make_tree_node_api
+    from .api import make_api as make_tree_node_api
 
     api_prefix = "/api/v1"
 
@@ -250,13 +287,7 @@ def create_app() -> FastAPI:
     return app
 ```
 
-Add `__init__.py` as well to `tree_app`:
-
-```python
-from .app import create_app
-```
-
-With everything in place, you can serve the application by executing `uvicorn tree_app:create_app --reload --factory` in your root directory. Go to [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) in the browser to see and try the created REST API.
+With everything in place, you can serve the application by executing `uvicorn tree_app.main:create_app --reload --factory` in your root directory. Go to [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) in the browser to see and try the created REST API.
 
 ## Requirements
 
@@ -274,4 +305,4 @@ Contributions are welcome.
 
 ## License - MIT
 
-The library is open-sourced under the conditions of the MIT [license](https://choosealicense.com/licenses/mit/).
+The library is open-sourced under the conditions of the [MIT license](https://choosealicense.com/licenses/mit/).
