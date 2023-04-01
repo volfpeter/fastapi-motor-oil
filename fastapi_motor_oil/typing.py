@@ -1,11 +1,13 @@
 from __future__ import annotations
 from typing import Any, Mapping, Sequence, TypedDict, TYPE_CHECKING
 
+from dataclasses import dataclass, field
+
 from motor.core import AgnosticCollection
+from pymongo.collation import Collation as PMCollation
 
 if TYPE_CHECKING:
     from bson.codec_options import CodecOptions
-    from pymongo.collation import Collation
     from pymongo.read_concern import ReadConcern
     from pymongo.read_preferences import Primary, PrimaryPreferred, Secondary, SecondaryPreferred, Nearest
     from pymongo.write_concern import WriteConcern
@@ -26,6 +28,25 @@ UpdateObject = dict[str, Any] | Sequence[dict[str, Any]]
 """
 MongoDB update object.
 """
+
+
+class CollationDict(TypedDict, total=False):
+    """
+    Collation definition as a dict.
+    """
+
+    locale: str
+    caseLevel: bool | None
+    caseFirst: str | None
+    strength: int | None
+    numericOrdering: bool | None
+    alternate: str | None
+    maxVariable: str | None
+    normalization: bool | None
+    backwards: bool | None
+
+
+Collation = PMCollation | CollationDict
 
 
 class CollectionOptions(TypedDict, total=False):
@@ -77,6 +98,20 @@ class FindOptions(TypedDict, total=False):
     session: AgnosticCollection | None  # Default is None
     allow_disk_use: bool | None  # Default is None
     let: bool | None  # Default is None
+
+
+@dataclass(frozen=True, kw_only=True, slots=True)
+class IndexData:
+    """
+    Index data description.
+    """
+
+    keys: str | Sequence[tuple[str, int | str | Mapping[str, Any]]]
+    unique: bool = False
+    background: bool = False
+    collation: Collation | None = None
+    sparse: bool = False
+    extra: dict[str, Any] = field(default_factory=dict)
 
 
 class InsertOneOptions(TypedDict, total=False):

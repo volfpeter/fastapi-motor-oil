@@ -1,8 +1,10 @@
 from .typing import (
     AgnosticCollection,  # noqa: F401
+    Collation,  # noqa: F401
     CollectionOptions,  # noqa: F401
     DeleteOptions,  # noqa: F401
     FindOptions,  # noqa: F401
+    IndexData,  # noqa: F401
     InsertOneOptions,  # noqa: F401
     MongoProjection,  # noqa: F401
     MongoQuery,  # noqa: F401
