@@ -3,10 +3,12 @@
 In this is example we will:
 
 - create a simple `TreeNode` document model with a name, a creation date, and an optional reference to a parent node;
-- declare a couple of delete rules and validators that enforce consistency;
 - prepare all the services that are necessary to create, read, update, or delete documents;
+- declare a couple of delete rules and validators that enforce consistency;
+- declare a unique name index for the `TreeNode` collection;
 - implement a `fastapi` `APIRouter` factory that can be included in `fastapi` applications;
-- and also set up the `fastapi` application itself.
+- set up the `fastapi` application itself;
+- implement automatic index creation in the application's lifespan method.
 
 ## Prerequisites
 
@@ -175,7 +177,104 @@ class TreeNodeService(MongoService[TreeNodeCreate, TreeNodeUpdate]):
         }
 ```
 
-With that, the service implementation is ready, we can move on creating the REST API.
+Finally, we will declare the indexes of the collection by setting `TreeNodeService.indexes`, which must be an index name - `IndexData` dictionary. A unique, ascending, case-insensitive index on the `name` attribute can be declared like this:
+
+```python
+...
+from fastapi_motor_oil import IndexData, MongoService
+
+...
+
+from .model import TreeNodeCreate, TreeNodeUpdate
+...
+
+class TreeNodeService(MongoService[TreeNodeCreate, TreeNodeUpdate]):
+    ...
+
+    indexes = {
+        "unique-name": IndexData(
+            keys="name",
+            unique=True,
+            collation={"locale": "en", "strength": 1},
+        ),
+    }
+
+    ...
+```
+
+For all indexing options, please see the [PyMongo documentation](https://pymongo.readthedocs.io/en/stable/index.html).
+
+Combining everything together, the final service implementation looks like this:
+
+```python
+from typing import Any
+from collections.abc import Sequence
+from datetime import datetime, timezone
+
+from bson import ObjectId
+from fastapi_motor_oil import CollectionOptions, IndexData, MongoQuery, MongoService, delete_rule, validator
+from motor.core import AgnosticClientSession
+
+from .model import TreeNodeCreate, TreeNodeUpdate
+
+class TreeNodeService(MongoService[TreeNodeCreate, TreeNodeUpdate]):
+    """
+    Tree node database services.
+    """
+
+    __slots__ = ()
+
+    collection_name: str = "tree_nodes"
+
+    collection_options: CollectionOptions | None = None
+
+    indexes = {
+        "unique-name": IndexData(
+            keys="name",
+            unique=True,
+            collation={"locale": "en", "strength": 1},
+        ),
+    }
+
+    @delete_rule("pre")  # Delete rule that remove the subtrees of deleted nodes.
+    async def dr_delete_subtree(self, session: AgnosticClientSession, ids: Sequence[ObjectId]) -> None:
+        child_ids = await self.find_ids({"parent": {"$in": ids}}, session=session)
+        if len(child_ids) > 0:
+            # Recursion
+            await self.delete_many({"_id": {"$in": child_ids}}, options={"session": session})
+
+    @delete_rule("deny")  # Delete rule that prevents the removal of root nodes.
+    async def dr_deny_if_root(self, session: AgnosticClientSession, ids: Sequence[ObjectId]) -> None:
+        root_cnt = await self.count_documents(
+            {"$and": [{"_id": {"$in": ids}}, {"parent": None}]},
+            options={"session": session},
+        )
+        if root_cnt > 0:
+            raise ValueError("Can not delete root nodes.")
+
+    @validator("insert-update")
+    async def v_parent_valid(self, query: MongoQuery | None, data: TreeNodeCreate | TreeNodeUpdate) -> None:
+        if data.parent is None:  # No parent node is always fine
+            return
+
+        if not await self.exists(data.parent):  # Parent must exist.
+            raise ValueError("Parent does not exist.")
+
+        if isinstance(data, TreeNodeCreate):  # No more checks during creation.
+            return
+
+        matched_ids = (await self.find_ids(query)) if isinstance(data, TreeNodeUpdate) else []
+        if data.parent in matched_ids:  # Self reference is forbidden.
+            raise ValueError("Self-reference.")
+
+    async def _convert_for_insert(self, data: TreeNodeCreate) -> dict[str, Any]:
+        return {
+            **(await super()._convert_for_insert(data)),
+            "created_at": datetime.now(timezone.utc),
+        }
+```
+
+With the service implementation ready, we can move on to creating the REST API.
 
 ## Routing
 
@@ -287,6 +386,7 @@ def make_api(
 Finally, we can create the application itself and include our routes in it:
 
 ```python
+from contextlib import asynccontextmanager
 from functools import lru_cache
 
 from fastapi import FastAPI
@@ -300,6 +400,17 @@ def get_database() -> AsyncIOMotorDatabase:
     client = AsyncIOMotorClient(mongo_connection_string)
     return client[database_name]
 
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    # Create all indexes on startup if they don't exist already.
+    from .service import TreeNodeService
+
+    db = get_database(get_client())
+
+    await TreeNodeService(db).create_indexes()
+
+    yield  # Application starts
+
 def register_routes(app: FastAPI) -> None:
     """Registers all routes of the application."""
     from .api import make_api as make_tree_node_api
@@ -312,12 +423,14 @@ def register_routes(app: FastAPI) -> None:
     )
 
 def create_app() -> FastAPI:
-    app = FastAPI()
+    app = FastAPI(lifespan=lifespan)  # Set lifespan method.
 
     register_routes(app)
 
     return app
 ```
+
+Notice the async `lifespan()` method (context manager) that creates the declared indexes before the application starts serving requests by calling the `create_indexes()` method of each service. There are of course many other ways for adding index creation (or recreation) to an application, like database migration or command line tools. Doing it in the `lifespan` method of the application is just one, easy to implement solution that works well for relatively small databases.
 
 ## Run
 
