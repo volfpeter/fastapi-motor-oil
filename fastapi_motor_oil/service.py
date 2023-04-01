@@ -6,7 +6,6 @@ from contextlib import asynccontextmanager, nullcontext, AbstractAsyncContextMan
 
 from bson import ObjectId
 from pydantic import BaseModel
-from pymongo.collation import Collation
 from pymongo.results import DeleteResult, InsertOneResult, UpdateResult
 
 if TYPE_CHECKING:
@@ -20,9 +19,11 @@ if TYPE_CHECKING:
     )
 
     from .typing import (
+        Collation,
         CollectionOptions,
         DeleteOptions,
         FindOptions,
+        IndexData,
         InsertOneOptions,
         MongoProjection,
         MongoQuery,
@@ -70,6 +71,11 @@ class MongoService(Generic[TInsert, TUpdate]):
     collection_options: CollectionOptions | None = None
     """
     Optional `CollectionOptions` dict.
+    """
+
+    indexes: dict[str, IndexData] | None = None
+    """
+    The full description of the indexes (if any) of the collection.
     """
 
     def __init__(self, database: AgnosticDatabase) -> None:
@@ -179,6 +185,28 @@ class MongoService(Generic[TInsert, TUpdate]):
             **kwargs,
         )
 
+    async def create_indexes(self, session: AgnosticClientSession | None = None) -> None:
+        """
+        Creates all declared indexes (see cls.indexes) on the collection of the service.
+
+        Arguments:
+            session: An optional session to use.
+        """
+        if self.indexes is None:
+            return
+
+        for name, idx in self.indexes.items():
+            await self.create_index(
+                idx.keys,
+                name=name,
+                unique=idx.unique,
+                background=idx.background,
+                collation=idx.collation,
+                sparse=idx.sparse,
+                session=session,
+                **idx.extra,
+            )
+
     async def drop_index(
         self,
         index_or_name: str | Sequence[tuple[str, int | str | Mapping[str, Any]]],
@@ -205,7 +233,7 @@ class MongoService(Generic[TInsert, TUpdate]):
         Arguments:
             session: An optional session to use.
         """
-        return await self.collection.drop_index(session, **kwargs)  # type: ignore[no-any-return]
+        return await self.collection.drop_indexes(session, **kwargs)  # type: ignore[no-any-return]
 
     def list_indexes(
         self,
