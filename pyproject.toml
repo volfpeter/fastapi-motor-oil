@@ -25,8 +25,8 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/volfpeter/fastapi-motor-oil"
-"Documentation" = "https://volfpeter.github.io/fastapi-motor-oil"
+Homepage = "https://github.com/volfpeter/fastapi-motor-oil"
+Documentation = "https://volfpeter.github.io/fastapi-motor-oil"
 
 [tool.black]
 line-length = 118
@@ -52,7 +52,7 @@ line-length = 118
 
 [tool.poetry]
 name = "fastapi-motor-oil"
-version = "0.4.2"
+version = "0.5.0"
 description = "Collection of async utilities for working with MongoDB and conveniently creating performant APIs with async web frameworks such a FastAPI."
 authors = ["Peter Volf <do.volfp@gmail.com>"]
 readme = "README.md"
