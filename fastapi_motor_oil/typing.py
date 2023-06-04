@@ -1,7 +1,8 @@
 from __future__ import annotations
-from typing import Any, Mapping, Sequence, TypedDict, TYPE_CHECKING
 
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any, TypedDict
 
 from motor.core import AgnosticCollection
 from pymongo.collation import Collation as PMCollation
@@ -9,8 +10,25 @@ from pymongo.collation import Collation as PMCollation
 if TYPE_CHECKING:
     from bson.codec_options import CodecOptions
     from pymongo.read_concern import ReadConcern
-    from pymongo.read_preferences import Primary, PrimaryPreferred, Secondary, SecondaryPreferred, Nearest
+    from pymongo.read_preferences import Nearest, Primary, PrimaryPreferred, Secondary, SecondaryPreferred
     from pymongo.write_concern import WriteConcern
+
+
+__all__ = (
+    "AgnosticCollection",
+    "MongoProjection",
+    "MongoQuery",
+    "UpdateObject",
+    "CollationDict",
+    "Collation",
+    "CollectionOptions",
+    "DeleteOptions",
+    "FindOptions",
+    "IndexData",
+    "InsertOneOptions",
+    "UpdateOneOptions",
+    "UpdateManyOptions",
+)
 
 
 MongoProjection = dict[str, Any]

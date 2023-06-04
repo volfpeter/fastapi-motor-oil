@@ -1,8 +1,8 @@
 from __future__ import annotations
-from typing import Any, Generator, Generic, TypeVar, TYPE_CHECKING
 
-from collections.abc import AsyncGenerator, Callable, Coroutine, Mapping, Sequence
-from contextlib import asynccontextmanager, nullcontext, AbstractAsyncContextManager
+from collections.abc import AsyncGenerator, Callable, Coroutine, Generator, Mapping, Sequence
+from contextlib import AbstractAsyncContextManager, asynccontextmanager, nullcontext
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from bson import ObjectId
 from pydantic import BaseModel
@@ -10,15 +10,14 @@ from pymongo.results import DeleteResult, InsertOneResult, UpdateResult
 
 if TYPE_CHECKING:
     from motor.core import (
-        AgnosticClient,
         AgnosticClientSession,
-        AgnosticCollection,
         AgnosticCursor,
-        AgnosticDatabase,
         AgnosticLatentCommandCursor,
     )
 
+    from .model import AgnosticClient, AgnosticDatabase
     from .typing import (
+        AgnosticCollection,
         Collation,
         CollectionOptions,
         DeleteOptions,
@@ -35,6 +34,12 @@ if TYPE_CHECKING:
 from .delete_rule import DeleteRule
 from .validator import Validator
 
+__all__ = (
+    "MongoService",
+    "DeleteResult",
+    "InsertOneResult",
+    "UpdateResult",
+)
 
 TInsert = TypeVar("TInsert", bound=BaseModel)
 TUpdate = TypeVar("TUpdate", bound=BaseModel)

@@ -1,5 +1,7 @@
-from typing import Concatenate, Generic, ParamSpec, Type, TypeVar
 from collections.abc import Callable, Coroutine
+from typing import Concatenate, Generic, ParamSpec, Type, TypeVar
+
+__all__ = ("BoundMethodWrapper",)
 
 TOwner = TypeVar("TOwner")
 TParams = ParamSpec("TParams")
@@ -89,4 +91,4 @@ class BoundMethodWrapper(Generic[TOwner, TParams, TConfig]):
         try:
             await self._func(owner, *args, **kwargs)
         except Exception as e:
-            raise e if self.exception is None else self.exception(f"Method failed: {self.name}")
+            raise e if self.exception is None else self.exception(f"Method failed: {self.name}") from e
