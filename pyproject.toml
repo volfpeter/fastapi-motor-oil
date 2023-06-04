@@ -28,31 +28,9 @@ classifiers = [
 Homepage = "https://github.com/volfpeter/fastapi-motor-oil"
 Documentation = "https://volfpeter.github.io/fastapi-motor-oil"
 
-[tool.black]
-line-length = 118
-
-[tool.mypy]
-show_error_codes = true
-check_untyped_defs = true
-disallow_any_generics = true
-disallow_subclassing_any = true
-disallow_untyped_calls = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-disallow_untyped_decorators = true
-no_implicit_optional = true
-warn_redundant_casts = true
-warn_unused_ignores = true
-warn_return_any = true
-strict_equality = true
-implicit_reexport = true
-
-[tool.ruff]
-line-length = 118
-
 [tool.poetry]
 name = "fastapi-motor-oil"
-version = "0.5.0"
+version = "0.5.1"
 description = "Collection of async utilities for working with MongoDB and conveniently creating performant APIs with async web frameworks such a FastAPI."
 authors = ["Peter Volf <do.volfp@gmail.com>"]
 readme = "README.md"
@@ -65,14 +43,64 @@ pydantic = "^1.10.5"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.1.0"
-mypy = "^1.0.1"
-ruff = "^0.0.251"
 mkdocs-material = "^9.1.0"
 mkdocstrings = {extras = ["python"], version = "^0.20.0"}
+mypy = "^1.0.1"
+ruff = "^0.0.251"
+poethepoet = "^0.20.0"
+
+[tool.black]
+line-length = 118
+
+[tool.mypy]
+strict = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = "motor.core.*"
+ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 118
+exclude = [
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".venv",
+    "dist",
+    "docs",
+]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "S",  # flake8-bandit - we must ignore these rules in tests
+    "C",  # flake8-comprehensions
+    "B",  # flake8-bugbear
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+]
+
+[tool.ruff.isort]
+known-third-party = [
+    "bson",
+    "motor",
+    "pydantic",
+]
+
+[tool.poe.tasks]
+black = "black ."
+black-check = "black . --check"
+mypy = "mypy ."
+ruff = "ruff check ."
+
+static-checks.sequence =  ["ruff", "black-check", "mypy"]
+static-checks.ignore_fail = "return_non_zero"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-[project.optional-dependencies]
-dev = ["black", "mypy", "ruff"]
