@@ -1,5 +1,7 @@
 # FastAPI-motor-oil
 
+**This project is deprecated and replaced by [motorhead](volfpeter.github.io/motorhead), adding Pydantic v2 support along with a couple of smaller improvements. Please create an issue if you need help with the migration.**
+
 `FastAPI-motor-oil` is a collection of async utilities for working with MongoDB and conveniently creating performant APIs with async web frameworks such a [FastAPI](https://fastapi.tiangolo.com/).
 
 Key features:
