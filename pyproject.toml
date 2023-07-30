@@ -30,7 +30,7 @@ Documentation = "https://volfpeter.github.io/fastapi-motor-oil"
 
 [tool.poetry]
 name = "fastapi-motor-oil"
-version = "0.5.1"
+version = "0.5.2"
 description = "Collection of async utilities for working with MongoDB and conveniently creating performant APIs with async web frameworks such a FastAPI."
 authors = ["Peter Volf <do.volfp@gmail.com>"]
 readme = "README.md"

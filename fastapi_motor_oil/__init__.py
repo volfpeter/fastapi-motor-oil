@@ -1,3 +1,5 @@
+from warnings import warn
+
 from .bound_method_wrapper import BoundMethodWrapper as BoundMethodWrapper
 from .delete_rule import DeleteConfig as DeleteConfig
 from .delete_rule import DeleteError as DeleteError
@@ -29,3 +31,9 @@ from .typing import UpdateOneOptions as UpdateOneOptions
 from .validator import ValidationError as ValidationError
 from .validator import Validator as Validator
 from .validator import validator as validator
+
+warn(
+    "FastAPI-motor-oil is deprecated and replaced by motorhead with support for Pydantic v2. See https://volfpeter.github.io/motorhead/",
+    DeprecationWarning,
+    stacklevel=2,
+)
